@@ -215,10 +215,12 @@ class CloneVisitor extends LambdaVisitor<Lambda> {
             this.changed = true;
             return body;
         }else{
+            let inCh = this.changed;
             let func = this.do_visit(node.func());
-            let oldCh = this.changed;
+            let argCh = this.changed;
+            this.changed = inCh;
             let arg = this.do_visit(node.arg());
-            this.changed = this.changed || oldCh;
+            this.changed = this.changed || argCh;
             let newN = this.factory.newApplication(func, arg);
             if(!this.changed)
                 newN._alias = node._alias;
@@ -227,13 +229,19 @@ class CloneVisitor extends LambdaVisitor<Lambda> {
     }
 
     visit_abst(node: Abstraction): Lambda {
+        let usages: Variable[] = [];
+        this.usage[node.id()] = usages;
         let body = this.do_visit(node.body());
         let newN = this.factory.newAbstraction(node.name(), body);
+        if(usages.length != node._usages.length) {
+            console.log("not equal!");
+        }
         if(!this.changed)
             newN._alias = node._alias;
-        newN._usages = this.usage[node.id()];
-        if(newN._usages) {
-            for(let use of newN._usages) {
+        
+        if(usages.length > 0) {
+            newN._usages = usages;
+            for(let use of usages) {
                 use._def = newN;
             }
         }
