@@ -77,13 +77,13 @@ Number = _ num:Integer _
     return {type: "number", number: num};
 }
 
-Identifier "variable" = _ id:$([a-zA-Z]+) _
+Identifier "variable" = _ id:$([_a-zA-Z][_a-zA-Z0-9]*) _
 {
   return id;
 }
 
 Integer "integer" = [0-9]+ { return parseInt(text(), 10); }
 
-Operator = $([-+%/<>=_\[\]^!=&{}*?#$|~]+ / '`' Identifier '`')
+Operator = $([-+%/<>=\[\]^!=&{}*?#$|~]+ / '`' Identifier '`')
 
 _ "whitespace" = [ \t\n\r]*
