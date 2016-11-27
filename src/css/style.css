@@ -1,0 +1,16 @@
+body {
+    background-color: whitesmoke;
+}
+
+.inputArea {
+    width: auto;
+    background-color: whitesmoke;
+    border: solid 1px darkgray;
+    padding: 2px;
+}
+
+.transition-prob-control input {
+    margin: 4px;
+    width: 80px;
+    text-align: center;
+}
