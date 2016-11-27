@@ -14,7 +14,7 @@ export function reduce(lmb: Lambda, strategy: ReduceStrategy, factory: LambdaFac
 }
 
 export function reduceAll(lmb: Lambda, strategy: ReduceStrategy, factory: LambdaFactory): Lambda[] {
-    let steps: Lambda[] = [];
+    let steps: Lambda[] = [lmb];
     let step: Lambda | undefined;
     while(step = reduce(lmb, strategy, factory)) {
         steps.push(step);

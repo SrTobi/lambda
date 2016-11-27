@@ -31,7 +31,7 @@ interface Var extends Node {
     id: string
 }
 
-const grammar: PEG.Parser = require("./grammar");
+const grammar: PEG.Parser = require("./grammar.pegjs");
 
 export function parse(code: string, factory: LambdaFactory): Lambda {
 

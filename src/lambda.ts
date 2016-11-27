@@ -208,7 +208,7 @@ class CloneVisitor extends LambdaVisitor<Lambda> {
         if(node == this.redex) {
             let abst = <Abstraction>(node.func());
             this.replaceVarDef = abst;
-            this.replaceDef = this.do_visit(node.arg());
+            this.replaceDef = node.arg();
             let body = this.do_visit(abst.body());
             this.replaceDef = undefined;
             this.replaceVarDef = undefined;
@@ -249,7 +249,7 @@ class CloneVisitor extends LambdaVisitor<Lambda> {
         let def = node.def();
         if(def) {
             if(def == this.replaceVarDef) {
-                return this.replaceDef as Lambda;
+                return this.do_visit(this.replaceDef as Lambda);
             }else{
                 let id = def.id();
                 (this.usage[id] || (this.usage[id] = [])).push(newN);

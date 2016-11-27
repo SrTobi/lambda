@@ -20,14 +20,15 @@ var config = {
       '.web.js',
       '.ts',
       '.tsx',
-      '.js'
+      '.js',
     ]
   },
   module: {
     loaders: [
       { test: /\.css$/, loader: "style-loader!css-loader" },
       { test: /\.(jpe?g|png|gif|woff|woff2|eot|ttf|svg)$/i, loader: "file" },
-      { test: /\.tsx?$/, loader: 'ts-loader' }
+      { test: /\.tsx?$/, loader: 'ts-loader' },
+      { test: /\.pegjs$/, loader: 'pegjs-loader' }
     ],
     preLoaders: [
       /*

@@ -14,3 +14,11 @@ body {
     width: 80px;
     text-align: center;
 }
+
+.input-block {
+    font-size: 15pt;
+}
+
+.ace-container {
+    border: solid 1px lightgray;
+}
