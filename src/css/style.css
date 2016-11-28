@@ -17,7 +17,12 @@ body {
 }
 
 .input-block {
-    font: 15px/normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace
+    font: 15px/normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+    margin-bottom: 30px;
+}
+
+.input-block:last-child {
+    margin-bottom: 0px;
 }
 
 .ace-container {

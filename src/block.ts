@@ -23,6 +23,8 @@ export class Block {
         let def = this.defs[name];
         if(def) {
             return def;
+        }else if(this._parent) {
+            return this._parent.lookup(name);
         }
     }
 

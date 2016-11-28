@@ -18,7 +18,7 @@ interface BlockState {
     showAllAppl?: boolean;
 }
 
-class InputBlock extends React.Component<{factory: LambdaFactory, value?: string}, BlockState> {
+class InputBlock extends React.Component<{factory: LambdaFactory, value?: string, index: number, parent: Block | undefined, onFinish: (idx: number, block: Block) => void}, BlockState> {
 
     private input: any;
     private block: Block;
@@ -28,7 +28,7 @@ class InputBlock extends React.Component<{factory: LambdaFactory, value?: string
     constructor(props: any) {
         super(props);
         this.code = this.props.value || "";
-        this.block = new Block(this.props.factory, undefined, () => {this.onCompile()})
+        this.block = new Block(this.props.factory, this.props.parent, () => {this.onCompile()})
         this.state = {evals: [], error: undefined}
     }
 
@@ -62,6 +62,11 @@ class InputBlock extends React.Component<{factory: LambdaFactory, value?: string
 
     private onSubmit(editor: any) {
         this.execute(editor.getValue(), editor);
+        this.props.onFinish(this.props.index, this.block);
+    }
+
+    private onExecute(editor: any) {
+        this.execute(editor.getValue(), editor);
     }
 
     render() {
@@ -79,10 +84,15 @@ class InputBlock extends React.Component<{factory: LambdaFactory, value?: string
                         minLines={3}
                         maxLines={150}
                         width=""
+                        focus={true}
                         commands={[{
                             name: "submit",
                             bindKey: "shift-enter",
                             exec: (editor: any) => this.onSubmit(editor)
+                        },{
+                            name: "execute",
+                            bindKey: "ctrl-enter",
+                            exec: (editor: any) => this.onExecute(editor)
                         }]}
                         value={this.code}
                         showPrintMargin={false}
@@ -126,7 +136,21 @@ export class InputPanel extends React.Component<{factory: LambdaFactory}, {block
 
     constructor(props: any) {
         super(props);
-        this.state = { blocks: [<InputBlock factory={this.props.factory} value="pair a b f = f a b\nfst p = p (\\a b -> a)\nsnd p = p (\\a b -> b)\ndouble a = pair a a\nswap p = p (\\a b -> pair b a)\nfunc = snd (swap (pair c d))"/>]};
+        this.state = {blocks: []};
+        this.addInputBlock(undefined);
+    }
+
+    addInputBlock(block: Block | undefined) {
+        let idx = this.state.blocks.length;
+        let newB = (<InputBlock factory={this.props.factory} index={idx} parent={block} onFinish={(from, blk) => {
+            if(from + 1 >= this.state.blocks.length) {
+                this.addInputBlock(blk);
+            }
+        }}/>);
+        this.state.blocks.push(newB);
+        if(this.setState) {
+            this.setState({blocks: this.state.blocks});
+        }
     }
 
     render() {
