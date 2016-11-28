@@ -57,9 +57,7 @@ export class Reducer {
     }
 
     private next(result: ReducerCallback, abort: () => void) {
-        console.log("next");
         if(!this.running) {
-            console.log("abort");
             abort();
         }else if(this.curLambda) {
             requestAnimationFrame(() => {
@@ -74,22 +72,23 @@ export class Reducer {
     }
 
     public step() {
-        if(!this.curLambda) {
-            return;
-        }
+        for(let i = 0; i < 10; ++i) {
+            if(!this.curLambda) {
+                return;
+            }
 
-        let redex = this.strategy(this.curLambda);
-        if(!redex) {
-            this.curLambda = undefined;
-            return;
-        }
-        console.log("step");
+            let redex = this.strategy(this.curLambda);
+            if(!redex) {
+                this.curLambda = undefined;
+                return;
+            }
 
-        this.curLambda = this.factory.reduce(this.curLambda, redex);
+            this.curLambda = this.factory.reduce(this.curLambda, redex);
 
-        if(this.curLambda) {
-            this.result.push(this.curLambda);
-            this.reduced.push(redex);
+            if(this.curLambda) {
+                this.result.push(this.curLambda);
+                this.reduced.push(redex);
+            }
         }
     }
 }
