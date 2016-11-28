@@ -64,3 +64,26 @@ export class NumberForm extends React.Component<{value: number, step?: number, m
 		);
 	}
 }
+
+
+export class Switch extends React.Component<{checked: boolean, label: string, id?: string, onChange: (checked: boolean) => void}, {}> {
+
+	private input: HTMLInputElement;
+	private id = this.props.id || Utils.randomString();
+
+	private onChange(): void {
+		this.props.onChange(this.input.checked);
+	}
+
+	render() {
+		return (
+			<div className="switch-grouper">
+                <label htmlFor={this.id}>{this.props.label}</label>
+				<label className="switch">
+					<input type="checkbox" checked={this.props.checked} id={this.id} ref={e => this.input = e} onChange={this.onChange.bind(this)} />
+					<div className="slider"></div>
+				</label>
+			</div>
+		);
+	}
+}

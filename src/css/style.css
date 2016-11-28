@@ -1,5 +1,6 @@
 body {
     background-color: whitesmoke;
+    padding-bottom: 500px;
 }
 
 .inputArea {
@@ -16,9 +17,97 @@ body {
 }
 
 .input-block {
-    font-size: 15pt;
+    font: 15px/normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace
 }
 
 .ace-container {
     border: solid 1px lightgray;
+}
+
+.error-box {
+    color: darkred;
+    border: solid 1px lightgray;
+    padding: 3px;
+}
+
+.config-box {
+    color: dimgrey;
+    border: solid 1px lightgray;
+    padding: 5px;
+    vertical-align: center;
+    background-color: #f0f0f0;
+}
+
+.config-box label {
+    margin: 0 4px;
+}
+
+.expr-box {
+    color: black;
+    border: solid 1px lightgray;
+    padding: 3px;
+    padding-left: 10px;
+    overflow: auto;
+    word-wrap: normal;
+    white-space:nowrap;
+}
+
+.appl-box {
+    padding: 1px;
+}
+
+
+.switch-grouper {
+    vertical-align: middle;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 30px;
+  height: 17px;
+  margin: 0 4px;
+  vertical-align: middle;
+}
+
+/* Hide default HTML checkbox */
+.switch input {display:none;}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 13px;
+  width: 13px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(13px);
+  -ms-transform: translateX(13px);
+  transform: translateX(13px);
 }
