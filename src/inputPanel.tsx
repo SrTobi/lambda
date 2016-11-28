@@ -82,8 +82,8 @@ class InputBlock extends React.Component<{factory: LambdaFactory, value?: string
     }
 
     private execute(code: string, editor: any) {
-        this.setState({error: undefined, evaluating: true});
         this.code = code;
+        this.setState({error: undefined, evaluating: true});
         editor.getSession().setAnnotations([]);
         try {
             this.block.setCode(code);
