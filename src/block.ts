@@ -39,24 +39,19 @@ export class Block {
     }
 
     compile() {
-        let code = this.code.replace(/\r?\n(?=[^\n\r])\s/, " ");
-        let lines = code.split(/[;\n]/);
-
+        this.defs = {};
         this.exprs = [];
+        
+        let entities = parse(this.code, this.factory);
 
-        for(let line of lines) {
-            line = line.replace(/^\s+|\s+$/g, '');
-            if(line.length) {
-                console.log("line: " + line);
-                let ast = parse(line, this.factory);
-                let visitor = new ResolveVisitor(this, this.factory);
-                let checked_ast = visitor.do_visit(ast);
-                if(checked_ast.isGlobalDef()) {
-                    let def = checked_ast as GlobalDef;
-                    this.defs[def.name()] = def;
-                }else{
-                    this.exprs.push(checked_ast);
-                }
+        for(let entity of entities) {
+            let visitor = new ResolveVisitor(this, this.factory);
+            let ast = visitor.do_visit(entity);
+            if(ast.isGlobalDef()) {
+                let def = ast as GlobalDef;
+                this.defs[def.name()] = def;
+            }else{
+                this.exprs.push(ast);
             }
         }
 

@@ -7,6 +7,11 @@ interface Node {
     type: string
 }
 
+interface Block {
+    type: "block",
+    entities: Node[]
+}
+
 interface Definition extends Node {
     type: "def",
     name: string,
@@ -33,7 +38,7 @@ interface Var extends Node {
 
 const grammar: PEG.Parser = require("./grammar.pegjs");
 
-export function parse(code: string, factory: LambdaFactory): Lambda {
+export function parse(code: string, factory: LambdaFactory): Lambda[] {
 
     function makeParameter(body: Lambda, params: string[]): Lambda {
         for(let param of params.reverse()) {
@@ -76,7 +81,8 @@ export function parse(code: string, factory: LambdaFactory): Lambda {
         throw "internal error: unknown node type " + node.type;
     }
 
-    let root: Node = grammar.parse(code);
+    let root: Block = grammar.parse(code);
 
-    return convert(root);
+
+    return root.entities.map(convert);
 }

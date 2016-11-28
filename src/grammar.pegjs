@@ -1,4 +1,17 @@
-Lambda = Def / Expr
+Block = entities:Entity* {
+    return {
+        type: "block",
+        entities: entities.filter((e) => { return e;})
+    };
+}
+
+Entity = entity:(Def / Expr / Comment) _ [\n\r;]* {
+    return entity;
+}
+
+Comment = _ ("--" / "//") ([^\n\r]*) {
+    return undefined;
+}
 
 Def = name:Identifier params:(Identifier*) '=' _ def:Expr
 {
@@ -86,4 +99,4 @@ Integer "integer" = [0-9]+ { return parseInt(text(), 10); }
 
 Operator = $([-+%/<>=\[\]^!=&{}*?#$|~]+ / '`' Identifier '`')
 
-_ "whitespace" = [ \t\n\r]*
+_ "whitespace" = ([ \t]/[\n\r]+[ \t])*
