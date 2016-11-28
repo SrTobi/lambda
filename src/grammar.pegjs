@@ -1,4 +1,4 @@
-Block = entities:Entity* {
+Block = ([\n\r \t])*  entities:Entity* {
     return {
         type: "block",
         entities: entities.filter((e) => { return e;})
