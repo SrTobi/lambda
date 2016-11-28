@@ -1,2 +1,6 @@
 #!/bin/sh
-git subtree push --prefix docs origin gh-pages
+npm run bundle
+cp dist/* docs
+git add docs
+git commit -m "publish new version"
+git push --force
