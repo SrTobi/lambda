@@ -61,6 +61,18 @@ body {
     padding: 1px;
 }
 
+.reduce-box {
+    text-align: right;
+    background: #d0ffd0;
+    float: right;
+}
+
+
+
+
+
+
+
 
 .switch-grouper {
     vertical-align: middle;

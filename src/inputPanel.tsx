@@ -120,6 +120,7 @@ class InputBlock extends React.Component<{factory: LambdaFactory, value?: string
                                         .filter((lmb, idx) => showAllAppl || idx == 0 || idx == lmbs.length - 1)
                                         .map((lmb, idx) => <div className="appl-box">{idx == 0? "" : "=>"} {to_string(lmb)}</div>)
                                     }
+                                    <div className="reduce-box">{lmbs.length - 1} Steps</div>
                                 </div>
                                 );
                         })}
