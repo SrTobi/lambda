@@ -66,7 +66,7 @@ export class NumberForm extends React.Component<{value: number, step?: number, m
 }
 
 
-export class Switch extends React.Component<{checked: boolean, label: string, id?: string, onChange: (checked: boolean) => void}, {}> {
+export class Switch extends React.Component<{className?: string, checked: boolean, label: string, id?: string, onChange: (checked: boolean) => void}, {}> {
 
 	private input: HTMLInputElement;
 	private id = this.props.id || Utils.randomString();
@@ -77,13 +77,33 @@ export class Switch extends React.Component<{checked: boolean, label: string, id
 
 	render() {
 		return (
-			<div className="switch-grouper">
+			<span className={"switch-grouper " + (this.props.className || "")}>
                 <label htmlFor={this.id}>{this.props.label}</label>
 				<label className="switch">
 					<input type="checkbox" checked={this.props.checked} id={this.id} ref={e => this.input = e} onChange={this.onChange.bind(this)} />
 					<div className="slider"></div>
 				</label>
-			</div>
+			</span>
+		);
+	}
+}
+
+
+export class ToggleButton extends React.Component<{className?: string, checked: boolean, label: string, id?: string, onChange: (checked: boolean) => void}, {}> {
+
+	private input: HTMLInputElement;
+	private id = this.props.id || Utils.randomString();
+
+	private onChange(): void {
+		this.props.onChange(this.input.checked);
+	}
+
+	render() {
+		return (
+			<label className={"toggle " + (this.props.className || "")}>
+				<input type="checkbox" checked={this.props.checked} id={this.id} ref={e => this.input = e} onChange={this.onChange.bind(this)} />
+				<div className="toggle-view">{this.props.label}</div>
+			</label>
 		);
 	}
 }

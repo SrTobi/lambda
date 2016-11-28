@@ -11,11 +11,22 @@ import * as PegJs from 'pegjs';
 declare var require:any;
 import AceEditor from 'react-ace';
 
+function toStrategy(strategy: string) {
+    console.log(strategy);
+    switch(strategy) {
+        case "normal": return ev.strategy.normal;
+        case "value": return ev.strategy.callByValue;
+        case "name": return ev.strategy.callByName;
+    }
+    throw "unknown strategy";
+}
 
 interface BlockState {
     evals?: Lambda[][];
     error?: string;
     showAllAppl?: boolean;
+    evaluating?: boolean;
+    strategy?: ev.ReduceStrategy;
 }
 
 class InputBlock extends React.Component<{factory: LambdaFactory, value?: string, index: number, parent: Block | undefined, onFinish: (idx: number, block: Block) => void}, BlockState> {
@@ -24,26 +35,55 @@ class InputBlock extends React.Component<{factory: LambdaFactory, value?: string
     private block: Block;
     private code: string;
     private id = utils.randomString(12);
+    private reducers: ev.Reducer[] = [];
+    private strategySelect: HTMLElement;
 
     constructor(props: any) {
         super(props);
         this.code = this.props.value || "";
         this.block = new Block(this.props.factory, this.props.parent, () => {this.onCompile()})
-        this.state = {evals: [], error: undefined}
+        this.state = {evals: [], strategy: ev.strategy.normal}
+    }
+
+    private stopReducing() {
+        this.reducers.forEach(r => r.stop());
+        this.reducers = [];
+        this.setState({evaluating: false});
     }
 
     private onCompile() {
+        this.state.evaluating = true;
         let exprs = this.block.expressions();
+        let strategy = this.state.strategy as ev.ReduceStrategy;
+        this.reducers = exprs.map(expr => new ev.Reducer(expr, strategy, this.props.factory));
+        this.compile(0, []);
+    }
+
+    private endCompile(evals: Lambda[][]) {
+        console.log(evals.length);
+        this.stopReducing();
         this.setState({
-            evals: exprs.map((expr) => {
-                return ev.reduceAll(expr, ev.normalReduce, this.props.factory);
-            })
+            evals: evals
         });
     }
 
+
+    private compile(i: number, evals: Lambda[][]) {
+        if(i < this.reducers.length) {
+            this.reducers[i].run((steps, reduced) => {
+                evals.push(steps);
+                this.compile(i + 1, evals);
+            }, () => {
+                this.endCompile(evals);
+            });
+        }else{
+            this.endCompile(evals);
+        }
+    }
+
     private execute(code: string, editor: any) {
+        this.setState({error: undefined, evaluating: true});
         this.code = code;
-        this.setState({error: undefined});
         editor.getSession().setAnnotations([]);
         try {
             this.block.setCode(code);
@@ -73,13 +113,14 @@ class InputBlock extends React.Component<{factory: LambdaFactory, value?: string
     render() {
         let evals = this.state.evals || [];
         let showAllAppl = this.state.showAllAppl || false;
+        let execButton = "Run";
         return(
             <div className="input-block">
                 <div className="ace-container">
                     <AceEditor
                         name={this.id}
                         onKeyUp={(o: any) => this.onSubmit(o)}
-                        ref={(e: any) => this.input = e}
+                        onLoad={(e: any) => {console.log(e); this.input = e}}
                         fontSize={15}
                         className="ace-input-area"
                         minLines={3}
@@ -106,7 +147,29 @@ class InputBlock extends React.Component<{factory: LambdaFactory, value?: string
                         />
                 </div>
                 <div className="config-box">
-                    <Visual.Switch checked={showAllAppl} onChange={(b:boolean) =>{ this.setState({showAllAppl: b})}} label="Show all steps" />
+                    {/* Left site */}
+                    <div className="left">
+                        <Visual.Switch
+                            className="showAll-switch"
+                            checked={showAllAppl}
+                            onChange={(b:boolean) =>{ this.setState({showAllAppl: b})}}
+                            label="Show all steps" />
+                    </div>
+
+                    {/* Right site */}
+                    <div className="right">
+                        <select className="strategy-select" ref={(s) => this.strategySelect = s} onChange={(sel: any)=>this.setState({strategy: toStrategy(sel.target.value)})}>
+                            <option value="normal">Normal</option>
+                            <option value="name">Call-By-Name</option>
+                            <option value="value">Call-By-Value</option>
+                        </select>
+                        <Visual.ToggleButton
+                            className="run-button"
+                            checked={!!this.state.evaluating}
+                            label={this.state.evaluating? "Stop \u25FE" : "Run \u25B6"}
+                            onChange={(b:boolean) =>{if(b) {this.onExecute(this.input)} else this.stopReducing();} } />
+                    </div>
+                    <div className="float-clear" />
                 </div>
                 {this.state.error?
                     <div className="error-box">

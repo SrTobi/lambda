@@ -47,6 +47,10 @@ body {
     margin: 0 4px;
 }
 
+.config-box > * {
+    height: 30px;
+}
+
 .expr-box {
     color: black;
     border: solid 1px lightgray;
@@ -67,14 +71,38 @@ body {
     float: right;
 }
 
+.showAll-switch {
+    vertical-align: middle;
+}
+
+.left, .right {
+    vertical-align: middle;
+}
+
+.left { float: left; }
+.right { float: right; }
+
+.run-button > .toggle-view {
+    color: white;
+    background: green;
+    width: 50pt;
+    margin-left: 5px;
+    text-align: center;
+}
+
+.run-button > input:checked + .toggle-view {
+    background: darkred;
+}
+
+.float-clear {
+    clear: both;
+    height: 0
+}
 
 
 
 
-
-
-
-.switch-grouper {
+.switch {
     vertical-align: middle;
 }
 
@@ -99,8 +127,8 @@ body {
   right: 0;
   bottom: 0;
   background-color: #ccc;
-  -webkit-transition: .4s;
-  transition: .4s;
+  -webkit-transition: .1s;
+  transition: .1s;
 }
 
 .slider:before {
@@ -111,8 +139,8 @@ body {
   left: 2px;
   bottom: 2px;
   background-color: white;
-  -webkit-transition: .4s;
-  transition: .4s;
+  -webkit-transition: .1s;
+  transition: .1s;
 }
 
 input:checked + .slider {
@@ -128,3 +156,46 @@ input:checked + .slider:before {
   -ms-transform: translateX(13px);
   transform: translateX(13px);
 }
+
+
+
+
+
+.toggle {
+    vertical-align: middle;
+}
+
+.toggle {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Hide default HTML checkbox */
+.toggle input {display:none;}
+
+/* The slider */
+.toggle-view {
+  cursor: pointer;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+  padding: 2px 5px;
+}
+
+.toggle-view:before {
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .toggle-view {
+  background-color: #2196F3;
+}
+
+input:focus + .toggle-view {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+
+
