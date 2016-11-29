@@ -1,0 +1,24 @@
+test_id = beginUnitTest
+            unitTest (id true)
+            endUnitTest end
+
+test_self = beginUnitTest
+            unitTest (self true false)
+            endUnitTest end
+
+test_pipe = beginUnitTest
+            unitTest ((pipe id id) true)
+            endUnitTest end
+
+test_Y = beginUnitTest
+            unitTest (Y (\f.id) true)
+            endUnitTest end
+
+test_stddef = beginUnitTest
+                unitTest test_id
+                unitTest test_self
+                unitTest test_pipe
+                unitTest test_Y
+                endUnitTest end
+
+test_std
