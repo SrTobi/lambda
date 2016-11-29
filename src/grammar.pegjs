@@ -34,7 +34,7 @@ ExprP = _ '(' _ exp:Expr _ ')' _
 
 Abstraction = Abstraction1 / Abstraction2
 
-Abstraction1 = '\\' varId:Identifier _ "." expr:Expr
+Abstraction1 = _ '\\' varId:Identifier "." expr:Expr
 {
     return {
         type: "abstr",
@@ -43,7 +43,7 @@ Abstraction1 = '\\' varId:Identifier _ "." expr:Expr
     };
 }
 
-Abstraction2 = '\\' vars:(Identifier+) _ "->" expr:Expr
+Abstraction2 = _ '\\' vars:(Identifier+) "->" expr:Expr
 {
     return {
         type: "abstr",
