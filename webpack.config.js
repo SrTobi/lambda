@@ -52,7 +52,9 @@ var config = {
     ),
 
     // generates an index.html
-    new HtmlWebpackPlugin()
+    new HtmlWebpackPlugin({
+      title: "Lambda"
+    })
   ]
 };
 
