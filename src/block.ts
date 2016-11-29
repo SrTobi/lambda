@@ -7,11 +7,27 @@ export class Block {
     private exprs: Lambda[] = [];
     private code: string = "";
     private child: Block;
+    private enabled = true;
 
     constructor(private factory: LambdaFactory, private _parent?: Block, private onRecompile?: (context: Block) => void) {
         if(_parent) {
             _parent.child = this;
         }
+    }
+
+    enable(enable: boolean) {
+        let wasEnabled = this.enabled;
+        this.enabled = enable;
+
+        this.compile();
+
+        if(wasEnabled != enable && this.child) {
+            this.child.compile();
+        }
+    }
+
+    isEnabled() {
+        return this.enabled;
     }
 
     setCode(code: string): void {
@@ -43,6 +59,10 @@ export class Block {
     compile() {
         this.defs = {};
         this.exprs = [];
+
+        if(!this.enabled) {
+            return;
+        }
         
         let entities = parse(this.code, this.factory);
 
