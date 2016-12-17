@@ -1,7 +1,7 @@
 import {Lambda, LambdaFactory} from './lambda';
 import {Block} from './block';
 import {to_string} from './textPrinter';
-import {reduceAll, normalReduce} from './evaluate';
+import {reduceAll, strategy} from './evaluate';
 
 let fac = new LambdaFactory();
 let c = new Block(fac);
@@ -14,7 +14,7 @@ c.definitions().forEach((func) => console.log(to_string(func, {expand_alias: fal
 
 if(func)
 {
-    let list = reduceAll(func.def(), normalReduce, fac);
+    let list = reduceAll(func.def(), strategy.normal, fac);
     console.log("list-size: " + list.length);
     list.forEach((step) => console.log(to_string(step, {expand_alias: false, print_id: false, print_def: false})));
 }
