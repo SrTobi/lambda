@@ -1,6 +1,5 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import {Settings, SettingsPanel} from './settings';
 import {InputPanel} from './inputPanel';
 import {LambdaFactory} from './lambda';
 import * as $ from "jquery";
