@@ -140,7 +140,7 @@ class CallByNameReduceVisitor extends LambdaVisitor<Application | undefined> {
 }
 
 function isValue(node: Lambda) {
-    return !node.isApplication();
+    return node.isAbstraction();
 }
 
 class CallByValueReduceVisitor extends LambdaVisitor<Application | undefined> {
