@@ -6,7 +6,7 @@ import {reduceAll, strategy} from './evaluate';
 let fac = new LambdaFactory();
 let c = new Block(fac);
 
-c.setCode("pair a b f = f a b; fst p = p (\\a b -> a); snd p = p (\\a b -> b); double a = pair a a; swap p = p (\\a b -> pair b a);func = snd (swap (pair c d))")
+c.setCodeAndCompile("pair a b f = f a b; fst p = p (\\a b -> a); snd p = p (\\a b -> b); double a = pair a a; swap p = p (\\a b -> pair b a);func = snd (swap (pair c d))")
 let func = c.lookup("func");
 
 

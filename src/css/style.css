@@ -3,19 +3,6 @@ body {
     padding-bottom: 500px;
 }
 
-.inputArea {
-    width: auto;
-    background-color: whitesmoke;
-    border: solid 1px darkgray;
-    padding: 2px;
-}
-
-.transition-prob-control input {
-    margin: 4px;
-    width: 80px;
-    text-align: center;
-}
-
 .input-block {
     font: 15px/normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
     margin-bottom: 30px;
@@ -25,7 +12,7 @@ body {
     margin-bottom: 0px;
 }
 
-.ace-container {
+.editor-container {
     border: solid 1px lightgray;
 }
 
@@ -33,6 +20,15 @@ body {
     color: darkred;
     border: solid 1px lightgray;
     padding: 3px;
+}
+
+.expression-count-box {
+    margin-right: 5px
+}
+
+.too-many-zero-expression-attempts {
+    color: darkred;
+    font-weight: bold;
 }
 
 .config-box {
@@ -142,6 +138,8 @@ body {
   -webkit-transition: .1s;
   transition: .1s;
 }
+
+
 
 input:checked + .slider {
   background-color: #2196F3;

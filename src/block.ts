@@ -30,8 +30,16 @@ export class Block {
         return this.enabled;
     }
 
-    setCode(code: string): void {
+    setCode(code: string) {
         this.code = code;
+    }
+    
+    getCode() {
+        return this.code;
+    }
+
+    setCodeAndCompile(code: string): void {
+        this.setCode(code);
         this.compile();
     }
 
@@ -42,6 +50,7 @@ export class Block {
         }else if(this._parent) {
             return this._parent.lookup(name);
         }
+        return undefined;
     }
 
     definitions(): GlobalDef[] {
