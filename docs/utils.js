@@ -1,6 +1,9 @@
 "use strict";
-const defaultRandomStrings = "abcdefghijklmnopqrstuvwxyz0123456789";
-function randomString(length = 8, chars = defaultRandomStrings) {
+Object.defineProperty(exports, "__esModule", { value: true });
+var defaultRandomStrings = "abcdefghijklmnopqrstuvwxyz0123456789";
+function randomString(length, chars) {
+    if (length === void 0) { length = 8; }
+    if (chars === void 0) { chars = defaultRandomStrings; }
     var result = "";
     for (var i = length; i > 0; --i) {
         result += chars[Math.floor(Math.random() * chars.length)];

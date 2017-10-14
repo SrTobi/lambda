@@ -1,8 +1,10 @@
 "use strict";
-const grammar = require("./grammar.pegjs");
+Object.defineProperty(exports, "__esModule", { value: true });
+var grammar = require("./grammar.pegjs");
 function parse(code, factory) {
     function makeParameter(body, params) {
-        for (let param of params.reverse()) {
+        for (var _i = 0, _a = params.reverse(); _i < _a.length; _i++) {
+            var param = _a[_i];
             body = factory.newAbstraction(param, body);
         }
         return body;
@@ -11,33 +13,34 @@ function parse(code, factory) {
         switch (node.type) {
             case "def":
                 {
-                    let n = node;
+                    var n = node;
                     return factory.newGlobalDefiniton(n.name, makeParameter(convert(n.def), n.params));
                 }
             case "abstr":
                 {
-                    let n = node;
+                    var n = node;
                     return makeParameter(convert(n.expr), n.vars);
                 }
             case "appl":
                 {
-                    let n = node;
-                    let func = convert(n.func);
-                    for (let arg of n.args) {
+                    var n = node;
+                    var func = convert(n.func);
+                    for (var _i = 0, _a = n.args; _i < _a.length; _i++) {
+                        var arg = _a[_i];
                         func = factory.newApplication(func, convert(arg));
                     }
                     return func;
                 }
             case "var":
                 {
-                    let n = node;
+                    var n = node;
                     return factory.newVariable(n.id);
                 }
         }
         throw "internal error: unknown node type " + node.type;
     }
-    let root = grammar.parse(code);
-    return convert(root);
+    var root = grammar.parse(code);
+    return root.entities.map(convert);
 }
 exports.parse = parse;
 //# sourceMappingURL=parse.js.map
