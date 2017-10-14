@@ -1,6 +1,6 @@
 body {
     background-color: whitesmoke;
-    padding-bottom: 500px;
+    padding-bottom: 200px;
 }
 
 .input-block {
@@ -81,12 +81,9 @@ u.redex-arg {
     float: right;
 }
 
-.showAll-switch {
-    vertical-align: middle;
-}
-
-.left, .right {
-    vertical-align: middle;
+.config-group {
+    display: flex;
+    align-items: center
 }
 
 .left { float: left; }

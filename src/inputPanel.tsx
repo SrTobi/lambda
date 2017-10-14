@@ -193,7 +193,7 @@ class InputBlock extends React.Component<InputBlockProperties, InputBlockState> 
             <div className="input-block">
                 <div className="editor-container">
                     <MonacoEditor
-                        height={200}
+                        height={400}
                         width="100%"
                         language=""
                         value={this.block.getCode()}
@@ -203,7 +203,7 @@ class InputBlock extends React.Component<InputBlockProperties, InputBlockState> 
                 </div>
                 <div className="config-box">
                     {/* Left site */}
-                    <div className="left">
+                    <div className="config-group left">
                         <Visual.Switch
                             className="showAll-switch"
                             checked={showAllAppl}
@@ -217,7 +217,7 @@ class InputBlock extends React.Component<InputBlockProperties, InputBlockState> 
                     </div>
 
                     {/* Right site */}
-                    <div className="right">
+                    <div className="config-group right">
                         <span className={"expression-count-box" + (this.state.attemptsToCompileZeroExpressions > 1 ? " too-many-zero-expression-attempts" : "")}>
                             {evals.length == 0 ? "No expressions" : ''}
                         </span>
