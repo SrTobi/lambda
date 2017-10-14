@@ -1,8 +1,8 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Block } from './block';
-import { Lambda, LambdaFactory } from './lambda';
-import { to_string } from './textPrinter';
+import { Lambda, Application, LambdaFactory } from './lambda';
+import { to_string, PrintOptions } from './textPrinter';
 import * as ev from './evaluate';
 import * as utils from './utils';
 import * as Visual from './visuals';
@@ -30,11 +30,15 @@ interface InputBlockProperties {
     onFinish: (idx: number, block: Block) => void;
 }
 
+// [the resulting lambda, the reduced application]
+type LambdaReduction = [Lambda, Application]
+
 interface InputBlockState {
-    evals?: Lambda[][];
+    evals?: LambdaReduction[][];
     error?: string;
     attemptsToCompileZeroExpressions: number;
-    showAllAppl?: boolean;
+    showAllAppl: boolean;
+    transformAliases: boolean;
     evaluating?: boolean;
     strategy?: ev.ReduceStrategy;
 }
@@ -54,7 +58,9 @@ class InputBlock extends React.Component<InputBlockProperties, InputBlockState> 
         this.state = {
             evals: [],
             strategy: ev.strategy.normal,
-            attemptsToCompileZeroExpressions: 0
+            attemptsToCompileZeroExpressions: 0,
+            showAllAppl: false,
+            transformAliases: true
         }
 
         window.addEventListener('resize', () => this.editor.layout());
@@ -82,7 +88,7 @@ class InputBlock extends React.Component<InputBlockProperties, InputBlockState> 
         }
     }
 
-    private endReducing(evals: Lambda[][]) {
+    private endReducing(evals: LambdaReduction[][]) {
         console.log(evals.length);
         this.stopReducing();
         this.setState({
@@ -91,10 +97,11 @@ class InputBlock extends React.Component<InputBlockProperties, InputBlockState> 
     }
 
 
-    private doReducing(i: number, evals: Lambda[][]) {
+    private doReducing(i: number, evals: LambdaReduction[][]) {
         if (i < this.reducers.length) {
             this.reducers[i].run((steps, reduced) => {
-                evals.push(steps);
+                let zip = steps.map((s, i) => [s, reduced[i]] as LambdaReduction);
+                evals.push(zip);
                 this.doReducing(i + 1, evals);
             }, () => {
                 this.endReducing(evals);
@@ -171,8 +178,9 @@ class InputBlock extends React.Component<InputBlockProperties, InputBlockState> 
     }
 
     render() {
-        const evals = this.state.evals || [];
-        const showAllAppl = this.state.showAllAppl || false;
+        const evals = this.state.evals || []
+        const showAllAppl = this.state.showAllAppl
+        const transformAliases = this.state.transformAliases
 
         const options: monaco.editor.IEditorOptions = {
             automaticLayout: true,
@@ -199,8 +207,13 @@ class InputBlock extends React.Component<InputBlockProperties, InputBlockState> 
                         <Visual.Switch
                             className="showAll-switch"
                             checked={showAllAppl}
-                            onChange={(b) => { console.log(`change to ${b}`); this.setState({ showAllAppl: b }) }}
+                            onChange={(b) => { this.setState({ showAllAppl: b }) }}
                             label="Show all steps" />
+                        <Visual.Switch
+                            className="transformAliases-switch"
+                            checked={transformAliases}
+                            onChange={(b) => { this.setState({ transformAliases: b }) }}
+                            label="Transform Aliases" />
                     </div>
 
                     {/* Right site */}
@@ -228,11 +241,35 @@ class InputBlock extends React.Component<InputBlockProperties, InputBlockState> 
                     :
                     <div className="output-box">
                         {evals.map((lmbs) => {
+                            function underline_appl(f: string, a: string): [string, string] {
+                                return [
+                                    `<u class="redex-func">${f}</u>`,
+                                    `<u class="redex-arg">${a}</u>`
+                                ]
+                            }
+                            function print_lmb([lmb, app]: LambdaReduction, idx: number): string[] {
+                                let ops: PrintOptions = {}
+                                if (app) {
+                                    ops.appl_pp = new Map([[app, underline_appl]])
+                                }
+                                let result = [(idx == 0 ? "" : "=> ") + to_string(lmb, ops)]
+
+                                if (app && showAllAppl && transformAliases) {
+                                    let f = app.func();
+                                    if (f.alias()) {
+                                        ops.force_expand_aliases = new Set([f])
+                                        result.push("&nbsp;= " + to_string(lmb, ops));
+                                    }
+                                }
+                                return result
+                            }
+
                             return (
                                 <div className="expr-box">
                                     {lmbs
-                                        .filter((lmb, idx) => showAllAppl || idx == 0 || idx == lmbs.length - 1)
-                                        .map((lmb, idx) => <div className="appl-box">{idx == 0 ? "" : "=>"} {to_string(lmb)}</div>)
+                                        .filter((_, idx) => showAllAppl || idx == 0 || idx == lmbs.length - 1)
+                                        .map(print_lmb)
+                                        .map(ss => ss.map((s, i) => <div className={"appl-box" + (i? " aliasTransform" : "")} dangerouslySetInnerHTML={{__html: s}} />))
                                     }
                                     <div className="reduce-box">{lmbs.length - 1} Steps</div>
                                 </div>

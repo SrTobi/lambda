@@ -61,6 +61,20 @@ body {
     padding: 1px;
 }
 
+.appl-box.aliasTransform {
+    color: #666666
+}
+
+u.redex-func {
+    border-bottom: 1px solid;
+    text-decoration: none;
+}
+
+u.redex-arg {
+    border-bottom: 1px dashed;
+    text-decoration: none;
+}
+
 .reduce-box {
     text-align: right;
     background: #d0ffd0;
