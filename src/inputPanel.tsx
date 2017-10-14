@@ -319,10 +319,10 @@ export class InputPanel extends React.Component<{ factory: LambdaFactory }, { bl
             <div className="panel panel-default config-panel">
                 <div className="panel-heading">
                     <h3 className="panel-title">
-                        <a data-toggle="collapse" data-target=".panel-body">Lambda Evaluator</a>
+                        <a data-toggle="collapse" data-target="#main-panel">Lambda Evaluator</a>
                     </h3>
                 </div>
-                <div className="panel-body collapse in">
+                <div className="panel-body collapse in" id="main-panel">
                     {this.state.blocks}
                 </div>
             </div>
