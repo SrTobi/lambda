@@ -9,7 +9,7 @@ Entity = entity:(Def / Expr / Comment) _ [\n\r;]* {
     return entity;
 }
 
-Comment = _ ("--" / "//") ([^\n\r]*) {
+Comment = _ ("--" / "//" / "#") ([^\n\r]*) {
     return undefined;
 }
 

@@ -8,6 +8,7 @@ import * as utils from './utils';
 import * as Visual from './visuals';
 import * as PegJs from 'pegjs';
 import MonacoEditor from 'react-monaco-editor';
+import {syntax as lambdaSyntax} from './lambdaEditorSyntax'
 
 
 declare var require: any;
@@ -177,6 +178,15 @@ class InputBlock extends React.Component<InputBlockProperties, InputBlockState> 
         this.editor = editor;
     }
 
+    private editorWillMount() {
+        console.log("register lang")
+        monaco.languages.register({
+            id: "lambda"
+        });
+        
+        monaco.languages.setMonarchTokensProvider("lambda", lambdaSyntax);
+    }
+
     render() {
         const evals = this.state.evals || []
         const showAllAppl = this.state.showAllAppl
@@ -195,10 +205,11 @@ class InputBlock extends React.Component<InputBlockProperties, InputBlockState> 
                     <MonacoEditor
                         height={400}
                         width="100%"
-                        language=""
+                        language="lambda"
                         value={this.block.getCode()}
                         onChange={code => this.block.setCode(code)}
                         editorDidMount={e => this.editorDidMount(e as monaco.editor.IStandaloneCodeEditor)}
+                        editorWillMount={e => this.editorWillMount()}
                     />
                 </div>
                 <div className="config-box">
