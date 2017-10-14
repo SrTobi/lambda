@@ -125,6 +125,7 @@ class InputBlock extends React.Component<InputBlockProperties, InputBlockState> 
                 text: err.message,
                 type: "error" // also warning and information
             }]);*/
+            this.stopReducing();
             return false;
         }
     }
