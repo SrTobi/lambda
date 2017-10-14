@@ -32,7 +32,7 @@ fst p = p (\a b -> a)
 snd p = p (\a b -> b)
 double a = pair a a
 swap p = p (\a b -> pair b a)
-~~~~
+~~~~~
 
 ## Church Numbers
 
