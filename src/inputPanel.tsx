@@ -1,19 +1,21 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import {Block} from './block';
-import {Lambda, LambdaFactory} from './lambda';
-import {to_string} from './textPrinter';
+import { Block } from './block';
+import { Lambda, Application, LambdaFactory } from './lambda';
+import { to_string, PrintOptions } from './textPrinter';
 import * as ev from './evaluate';
 import * as utils from './utils';
 import * as Visual from './visuals';
 import * as PegJs from 'pegjs';
+import MonacoEditor from 'react-monaco-editor';
+import {syntax as lambdaSyntax} from './lambdaEditorSyntax'
 
-declare var require:any;
-import AceEditor from 'react-ace';
+
+declare var require: any;
 
 function toStrategy(strategy: string) {
     console.log(strategy);
-    switch(strategy) {
+    switch (strategy) {
         case "normal": return ev.strategy.normal;
         case "value": return ev.strategy.callByValue;
         case "name": return ev.strategy.callByName;
@@ -21,45 +23,73 @@ function toStrategy(strategy: string) {
     throw "unknown strategy";
 }
 
-interface BlockState {
-    evals?: Lambda[][];
+interface InputBlockProperties {
+    factory: LambdaFactory;
+    value?: string;
+    index: number;
+    parent: Block | undefined;
+    onFinish: (idx: number, block: Block) => void;
+}
+
+// [the resulting lambda, the reduced application]
+type LambdaReduction = [Lambda, Application]
+
+interface InputBlockState {
+    evals?: LambdaReduction[][];
     error?: string;
-    showAllAppl?: boolean;
+    attemptsToCompileZeroExpressions: number;
+    showAllAppl: boolean;
+    transformAliases: boolean;
     evaluating?: boolean;
     strategy?: ev.ReduceStrategy;
 }
 
-class InputBlock extends React.Component<{factory: LambdaFactory, value?: string, index: number, parent: Block | undefined, onFinish: (idx: number, block: Block) => void}, BlockState> {
+class InputBlock extends React.Component<InputBlockProperties, InputBlockState> {
 
-    private input: any;
     private block: Block;
-    private code: string;
+    private editor: monaco.editor.IStandaloneCodeEditor;
     private id = utils.randomString(12);
     private reducers: ev.Reducer[] = [];
     private strategySelect: HTMLElement;
 
     constructor(props: any) {
         super(props);
-        this.code = this.props.value || "";
-        this.block = new Block(this.props.factory, this.props.parent, () => {this.onCompile()})
-        this.state = {evals: [], strategy: ev.strategy.normal}
+        this.block = new Block(this.props.factory, this.props.parent, () => { this.startReducing() })
+        this.block.setCode(this.props.value || "");
+        this.state = {
+            evals: [],
+            strategy: ev.strategy.normal,
+            attemptsToCompileZeroExpressions: 0,
+            showAllAppl: false,
+            transformAliases: true
+        }
+
+        window.addEventListener('resize', () => this.editor.layout());
     }
 
     private stopReducing() {
         this.reducers.forEach(r => r.stop());
         this.reducers = [];
-        this.setState({evaluating: false});
+        this.setState({ evaluating: false });
     }
 
-    private onCompile() {
-        this.state.evaluating = true;
+    private startReducing() {
         let exprs = this.block.expressions();
-        let strategy = this.state.strategy as ev.ReduceStrategy;
-        this.reducers = exprs.map(expr => new ev.Reducer(expr, strategy, this.props.factory));
-        this.compile(0, []);
+        console.log("attempts: ", this.state.attemptsToCompileZeroExpressions);
+        if (exprs.length) {
+            this.setState({attemptsToCompileZeroExpressions: 0});
+            this.stopReducing();
+            this.setState({ evaluating: true });
+            let strategy = this.state.strategy as ev.ReduceStrategy;
+            this.reducers = exprs.map(expr => new ev.Reducer(expr, strategy, this.props.factory));
+            this.doReducing(0, []);
+        } else {
+            this.endReducing([]);
+            this.setState({attemptsToCompileZeroExpressions: this.state.attemptsToCompileZeroExpressions + 1});
+        }
     }
 
-    private endCompile(evals: Lambda[][]) {
+    private endReducing(evals: LambdaReduction[][]) {
         console.log(evals.length);
         this.stopReducing();
         this.setState({
@@ -68,97 +98,141 @@ class InputBlock extends React.Component<{factory: LambdaFactory, value?: string
     }
 
 
-    private compile(i: number, evals: Lambda[][]) {
-        if(i < this.reducers.length) {
+    private doReducing(i: number, evals: LambdaReduction[][]) {
+        if (i < this.reducers.length) {
             this.reducers[i].run((steps, reduced) => {
-                evals.push(steps);
-                this.compile(i + 1, evals);
+                let zip = steps.map((s, i) => [s, reduced[i]] as LambdaReduction);
+                evals.push(zip);
+                this.doReducing(i + 1, evals);
             }, () => {
-                this.endCompile(evals);
+                this.endReducing(evals);
             });
-        }else{
-            this.endCompile(evals);
+        } else {
+            this.endReducing(evals);
         }
     }
 
-    private execute(code: string, editor: any) {
-        this.code = code;
-        this.setState({error: undefined, evaluating: true});
-        editor.getSession().setAnnotations([]);
+    private commitCodeToBlock() {
+        const code = this.block.getCode();
+        console.log(code);
+        this.setState({ error: undefined, evaluating: true });
+        //this.editor.getSession().setAnnotations([]);
         try {
-            this.block.setCode(code);
-        }catch(e) {
-            let err = e as PegJs.parser.SyntaxError;
-            
-            this.setState({error: err.message + " in line " + err.location.start.line + ", column " + err.location.start.column});
+            this.block.setCodeAndCompile(code);
+            return true;
+        } catch (e) {
+            const err = e as PegJs.parser.SyntaxError;
+            const { message, location } = err;
+            const { line, column } = location.start;
 
-            editor.getSession().setAnnotations([{
+            this.setError(`${message} in line ${line}, column ${column}`);
+
+            /*this.editor.getSession().setAnnotations([{
                 row: err.location.start.line-1,
                 column: err.location.start.column,
                 text: err.message,
                 type: "error" // also warning and information
-            }]);
+            }]);*/
+            this.stopReducing();
+            return false;
         }
     }
 
-    private onSubmit(editor: any) {
-        this.execute(editor.getValue(), editor);
-        this.props.onFinish(this.props.index, this.block);
+    private setError(msg: string) {
+        this.setState({ error: msg });
     }
 
-    private onExecute(editor: any) {
-        this.execute(editor.getValue(), editor);
+    private onSubmit() {
+        this.setState({attemptsToCompileZeroExpressions: 0});
+
+        // compile, start reducing and add new block
+        if (this.commitCodeToBlock()) {
+            this.props.onFinish(this.props.index, this.block);
+        }
+    }
+
+    private onExecute() {
+        // compile and start reducing
+        this.commitCodeToBlock();
+    }
+
+    private editorDidMount(editor: monaco.editor.IStandaloneCodeEditor) {
+        editor.focus();
+        editor.addAction({
+            label: "Execute Block",
+            id: "execute",
+            keybindings: [
+                monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter
+            ],
+            run: () => this.onExecute()
+        });
+        editor.addAction({
+            label: "Submit Block",
+            id: "submit",
+            keybindings: [
+                monaco.KeyMod.Shift | monaco.KeyCode.Enter
+            ],
+            run: () => this.onSubmit()
+        });
+
+        this.editor = editor;
+    }
+
+    private editorWillMount() {
+        console.log("register lang")
+        monaco.languages.register({
+            id: "lambda"
+        });
+        
+        monaco.languages.setMonarchTokensProvider("lambda", lambdaSyntax);
     }
 
     render() {
-        let evals = this.state.evals || [];
-        let showAllAppl = this.state.showAllAppl || false;
-        let execButton = "Run";
-        return(
+        const evals = this.state.evals || []
+        const showAllAppl = this.state.showAllAppl
+        const transformAliases = this.state.transformAliases
+
+        const options: monaco.editor.IEditorOptions = {
+            automaticLayout: true,
+            scrollbar: {
+                useShadows: false
+            },
+            fontFamily: "monaco"
+        };
+        return (
             <div className="input-block">
-                <div className="ace-container">
-                    <AceEditor
-                        name={this.id}
-                        onKeyUp={(o: any) => this.onSubmit(o)}
-                        onLoad={(e: any) => {console.log(e); this.input = e}}
-                        fontSize={15}
-                        className="ace-input-area"
-                        minLines={3}
-                        maxLines={150}
-                        width=""
-                        focus={true}
-                        commands={[{
-                            name: "submit",
-                            bindKey: "shift-enter",
-                            exec: (editor: any) => this.onSubmit(editor)
-                        },{
-                            name: "execute",
-                            bindKey: "ctrl-enter",
-                            exec: (editor: any) => this.onExecute(editor)
-                        }]}
-                        value={this.code}
-                        showPrintMargin={false}
-                        editorProps={{
-                            $blockScrolling: true,
-                            enableBasicAutocompletion: true,
-                            enableLiveAutocompletion: true,
-                            tabSize: 2
-                        }}
-                        />
+                <div className="editor-container">
+                    <MonacoEditor
+                        height={400}
+                        width="100%"
+                        language="lambda"
+                        value={this.block.getCode()}
+                        onChange={code => this.block.setCode(code)}
+                        editorDidMount={e => this.editorDidMount(e as monaco.editor.IStandaloneCodeEditor)}
+                        editorWillMount={e => this.editorWillMount()}
+                    />
                 </div>
                 <div className="config-box">
                     {/* Left site */}
-                    <div className="left">
+                    <div className="config-group left">
                         <Visual.Switch
                             className="showAll-switch"
                             checked={showAllAppl}
-                            onChange={(b:boolean) =>{ this.setState({showAllAppl: b})}}
+                            onChange={(b) => { this.setState({ showAllAppl: b }) }}
                             label="Show all steps" />
+                        <Visual.Switch
+                            className="transformAliases-switch"
+                            checked={transformAliases}
+                            onChange={(b) => { this.setState({ transformAliases: b }) }}
+                            label="Transform Aliases" />
                     </div>
 
                     {/* Right site */}
-                    <div className="right">
-                        <select className="strategy-select" ref={(s) => this.strategySelect = s} onChange={(sel: any)=>this.setState({strategy: toStrategy(sel.target.value)})}>
+                    <div className="config-group right">
+                        <span className={"expression-count-box" + (this.state.attemptsToCompileZeroExpressions > 1 ? " too-many-zero-expression-attempts" : "")}>
+                            {evals.length == 0 ? "No expressions" : ''}
+                        </span>
+                        <select className="strategy-select" ref={(s) => this.strategySelect = s!} onChange={(sel: any) => this.setState({ strategy: toStrategy(sel.target.value) })}>
                             <option value="normal">Normal</option>
                             <option value="name">Call-By-Name</option>
                             <option value="value">Call-By-Value</option>
@@ -166,27 +240,51 @@ class InputBlock extends React.Component<{factory: LambdaFactory, value?: string
                         <Visual.ToggleButton
                             className="run-button"
                             checked={!!this.state.evaluating}
-                            label={this.state.evaluating? "Stop \u25FE" : "Run \u25B6"}
-                            onChange={(b:boolean) =>{if(b) {this.onExecute(this.input)} else this.stopReducing();} } />
+                            label={this.state.evaluating ? "Stop \u25FE" : "Run \u25B6"}
+                            onChange={(b) => { if (b) { this.onExecute() } else this.stopReducing(); }} />
                     </div>
                     <div className="float-clear" />
                 </div>
-                {this.state.error?
+                {this.state.error ?
                     <div className="error-box">
                         Error: {this.state.error}
                     </div>
                     :
                     <div className="output-box">
                         {evals.map((lmbs) => {
+                            function underline_appl(f: string, a: string): [string, string] {
+                                return [
+                                    `<u class="redex-func">${f}</u>`,
+                                    `<u class="redex-arg">${a}</u>`
+                                ]
+                            }
+                            function print_lmb([lmb, app]: LambdaReduction, idx: number): string[] {
+                                let ops: PrintOptions = {}
+                                if (app) {
+                                    ops.appl_pp = new Map([[app, underline_appl]])
+                                }
+                                let result = [(idx == 0 ? "" : "=> ") + to_string(lmb, ops)]
+
+                                if (app && showAllAppl && transformAliases) {
+                                    let f = app.func();
+                                    if (f.alias()) {
+                                        ops.force_expand_aliases = new Set([f])
+                                        result.push("&nbsp;= " + to_string(lmb, ops));
+                                    }
+                                }
+                                return result
+                            }
+
                             return (
                                 <div className="expr-box">
                                     {lmbs
-                                        .filter((lmb, idx) => showAllAppl || idx == 0 || idx == lmbs.length - 1)
-                                        .map((lmb, idx) => <div className="appl-box">{idx == 0? "" : "=>"} {to_string(lmb)}</div>)
+                                        .filter((_, idx) => showAllAppl || idx == 0 || idx == lmbs.length - 1)
+                                        .map(print_lmb)
+                                        .map(ss => ss.map((s, i) => <div className={"appl-box" + (i? " aliasTransform" : "")} dangerouslySetInnerHTML={{__html: s}} />))
                                     }
                                     <div className="reduce-box">{lmbs.length - 1} Steps</div>
                                 </div>
-                                );
+                            );
                         })}
                     </div>
                 }
@@ -197,40 +295,38 @@ class InputBlock extends React.Component<{factory: LambdaFactory, value?: string
 
 
 
-export class InputPanel extends React.Component<{factory: LambdaFactory}, {blocks: JSX.Element[]}> {
+export class InputPanel extends React.Component<{ factory: LambdaFactory }, { blocks: JSX.Element[] }> {
 
     constructor(props: any) {
         super(props);
-        this.state = {blocks: []};
+        this.state = { blocks: [] };
         this.addInputBlock(undefined);
     }
 
     addInputBlock(block: Block | undefined) {
         let idx = this.state.blocks.length;
         let newB = (<InputBlock factory={this.props.factory} index={idx} parent={block} onFinish={(from, blk) => {
-            if(from + 1 >= this.state.blocks.length) {
+            if (from + 1 >= this.state.blocks.length) {
                 this.addInputBlock(blk);
             }
-        }}/>);
+        }} />);
         this.state.blocks.push(newB);
-        if(this.setState) {
-            this.setState({blocks: this.state.blocks});
-        }
+        this.setState({ blocks: this.state.blocks });
     }
 
     render() {
-        return(
+        return (
             <div className="panel panel-default config-panel">
                 <div className="panel-heading">
                     <h3 className="panel-title">
-                        <a data-toggle="collapse" data-target=".panel-body">Lambda Evaluator</a>
+                        <a data-toggle="collapse" data-target="#main-panel">Lambda Evaluator</a>
                     </h3>
                 </div>
-                <div className="panel-body collapse in">
+                <div className="panel-body collapse in" id="main-panel">
                     {this.state.blocks}
                 </div>
             </div>
         );
     }
-    
+
 }

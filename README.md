@@ -1,119 +1,60 @@
 # Lambda
 
+<p>
+    This tool lets you evaluate lambda expressions.
+    Just enter your code into the code box and click <b>Run</b> or press <i><code>Strg+Enter</code>.</i>
+    You may also create a new code box: just press <i><code>Shift+Enter</code></i>.
+</p>
+
 [Try it online!](https://srtobi.github.io/lambda/docs)
 
-Evaluate lambda expressions like (press `shift enter` to evaluate).
+<h4>Lambda</h4>
+<p>
+    Lambda expressions can be written in the usual way.
+</p>
 
-## Stddef
+<pre>(\arg.arg var) (\i.i)</pre>
 
-~~~~~
-id a = a
-self a = a a
-pipe g f = \x. g (f x) 
-Y f = self (\x.f (x x))
-~~~~~
+<p>
+    In the box below the code you can now see how your expression is evaluated.
+    The underlines will indicate the redix that is currentliy evaluated.
+</p>
 
-## Bool
+<pre>(\arg.arg var) (\i.i)
+=> (\i.i) var
+=> var</pre>
 
-~~~~~
-true t f = t
-false t f = f
-if cond then else = cond then else
-not b = b false true
-and lhs rhs = if lhs rhs false
-or lhs rhs = if lhs true rhs
-~~~~~
+<p>
+    You may also define aliases for lambda expressions. Just assign them to a name using <code>[alias] = [lambda]</code>.
+    The alias will then act as if it were the assigned expression.
+    Remember that you <b>can not</b> use the alias in the expression itself!
+</p>
+<pre>
+id = (\i.i)
+(\arg.arg var) id
+</pre>
 
-## Pair
-
-~~~~~
-pair a b f = f a b
-fst p = p (\a b -> a)
-snd p = p (\a b -> b)
-double a = pair a a
-swap p = p (\a b -> pair b a)
-~~~~
-
-## Church Numbers
-
-Needs pair!
-
-~~~~
-n0 = \s z -> z
-n1 = \s z -> s z
-n2 = \s z -> s (s z)
-n3 = \s z -> s (s (s z))
-
-succ n = \s z -> s (n s z)
-_pred_next p = pair (snd p) (succ (snd p))
-pred n = fst(n _pred_next (double n0))
-
-sub n m = m pred n
-plus n m = n succ m
-mul n m = \s z -> n (m s) z
-exp n m = \s z -> m n s z
-
-isZero n = n (\z -> false) true
-equals n m = and (isZero (sub n m)) (isZero (sub m n))
-~~~~
-
-## Church Lists
-
-Needs bool and stddef
-
-~~~~
-list0 = end
-list1 e1 = prep e1 end
-list2 e1 e2 = prep e1 (list1 e2)
-list3 e1 e2 e3 = prep e1 (list2 e2 e3)
-list4 e1 e2 e3 e4 = prep e1 (list3 e2 e3 e4)
-
-end = \f n -> n
-prep elem list = \f n -> f elem (list f n)
-append elem list = \f n -> list f (f elem n)
-
-length = foldr (\e.succ) n0
-isEmpty list = list (\e acc -> false) true
-
-map m list = \f n -> list (pipe f m) n
-foldr f n list = list f n
-foldl f n list = list (\elem func -> (\acc -> func (f elem acc))) (\acc -> acc) n
-
-head list = foldr (\elem acc -> elem) error list
-last list = foldl (\elem acc -> elem) error list
-tail list = snd (foldr (\elem acc -> pair (prep elem (fst acc)) (fst acc)) (pair end error) list)
-
-reverse = foldr append end
-
-all pred = foldr (pipe and pred) true
-none pred = foldr (pipe and (pipe not pred)) true
-one pred = foldr (pipe or pred) false
-~~~~
-
-## Other interesting stuff
-
-~~~~
-iterate f n times = snd(times (\p -> (\v.pair (f v) (append v (snd p))) (fst p)) (pair n end))
-
-max n m = if (isZero (sub n m)) m n
-min n m = if (isZero (sub n m)) n m
-
-maximum = foldr max n0
-minimum list = foldr min (head list) list
+<p>
+    If you have <code>Transform Aliases</code> activated an alias will be transformed to its definition befor it gets evaluated.
+</p>
+<pre>
+(\arg.arg var) id
+=> id var
+&nbsp;= (\i.i) var
+=> var
+</pre>
 
 
-lesseq n m = isZero (sub n m)
+<h4>Syntactic sugar</h4>
+<p style={{color:"red"}}><b>Do not</b> use the following syntax in your exam!</p>
+<p>To make things easier there are two shortcuts regarding arguments:</p>
 
+<pre>
+// the following lines are equivalent
+func a b = expr
+func = \a.\b.expr
 
-fak_impl fak n = if (isZero n) n1 (mul n (fak (pred n)))
-fak = Y fak_impl
-~~~~
-
-## Unit tests
-
-~~~~
-beginUnitTest utest test = utest true test
-unitTest prev test = \nextUnit nextTest -> nextUnit (and prev test) nextTest
-unitTestF prev test = \nextUnit nextTest -> nextUnit (not (and prev test)) nextTest
-endUnitTest last test= last
-~~~~
+// the following lines are equivalent
+\a b -> expr
+\a.\b.expr
+</pre>

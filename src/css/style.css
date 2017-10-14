@@ -1,19 +1,6 @@
 body {
     background-color: whitesmoke;
-    padding-bottom: 500px;
-}
-
-.inputArea {
-    width: auto;
-    background-color: whitesmoke;
-    border: solid 1px darkgray;
-    padding: 2px;
-}
-
-.transition-prob-control input {
-    margin: 4px;
-    width: 80px;
-    text-align: center;
+    padding-bottom: 200px;
 }
 
 .input-block {
@@ -25,7 +12,7 @@ body {
     margin-bottom: 0px;
 }
 
-.ace-container {
+.editor-container {
     border: solid 1px lightgray;
 }
 
@@ -33,6 +20,15 @@ body {
     color: darkred;
     border: solid 1px lightgray;
     padding: 3px;
+}
+
+.expression-count-box {
+    margin-right: 5px
+}
+
+.too-many-zero-expression-attempts {
+    color: darkred;
+    font-weight: bold;
 }
 
 .config-box {
@@ -65,18 +61,29 @@ body {
     padding: 1px;
 }
 
+.appl-box.aliasTransform {
+    color: #666666
+}
+
+u.redex-func {
+    border-bottom: 1px solid;
+    text-decoration: none;
+}
+
+u.redex-arg {
+    border-bottom: 1px dashed;
+    text-decoration: none;
+}
+
 .reduce-box {
     text-align: right;
     background: #d0ffd0;
     float: right;
 }
 
-.showAll-switch {
-    vertical-align: middle;
-}
-
-.left, .right {
-    vertical-align: middle;
+.config-group {
+    display: flex;
+    align-items: center
 }
 
 .left { float: left; }
@@ -143,6 +150,8 @@ body {
   transition: .1s;
 }
 
+
+
 input:checked + .slider {
   background-color: #2196F3;
 }
@@ -197,5 +206,7 @@ input:focus + .toggle-view {
   box-shadow: 0 0 1px #2196F3;
 }
 
-
+.monaco-editor .margin {
+    background-color: #f0f0f0 !important
+}
 

@@ -32,7 +32,7 @@ export class CheckboxForm extends React.Component<{checked: boolean, label: stri
 	render() {
 		return (
 			<FormGroup label={this.props.label} id={this.props.id} isStatic>
-				<input type="checkbox" checked={this.props.checked} id={this.id} ref={e => this.input = e} onChange={this.onChange.bind(this)} />
+				<input type="checkbox" checked={this.props.checked} id={this.id} ref={e => this.input = e!} onChange={this.onChange.bind(this)} />
 			</FormGroup>
 		);
 	}
@@ -58,7 +58,7 @@ export class NumberForm extends React.Component<{value: number, step?: number, m
 					step={this.props.step}
 					min={this.props.min}
 					max={this.props.max}
-					ref={e => this.input = e}
+					ref={e => this.input = e!}
 					onChange={this.onChange.bind(this)} />
 			</FormGroup>
 		);
@@ -80,7 +80,7 @@ export class Switch extends React.Component<{className?: string, checked: boolea
 			<span className={"switch-grouper " + (this.props.className || "")}>
                 <label htmlFor={this.id}>{this.props.label}</label>
 				<label className="switch">
-					<input type="checkbox" checked={this.props.checked} id={this.id} ref={e => this.input = e} onChange={this.onChange.bind(this)} />
+					<input type="checkbox" checked={this.props.checked} id={this.id} ref={e => this.input = e!} onChange={this.onChange.bind(this)} />
 					<div className="slider"></div>
 				</label>
 			</span>
@@ -101,7 +101,7 @@ export class ToggleButton extends React.Component<{className?: string, checked: 
 	render() {
 		return (
 			<label className={"toggle " + (this.props.className || "")}>
-				<input type="checkbox" checked={this.props.checked} id={this.id} ref={e => this.input = e} onChange={this.onChange.bind(this)} />
+				<input type="checkbox" checked={this.props.checked} id={this.id} ref={e => this.input = e!} onChange={this.onChange.bind(this)} />
 				<div className="toggle-view">{this.props.label}</div>
 			</label>
 		);
