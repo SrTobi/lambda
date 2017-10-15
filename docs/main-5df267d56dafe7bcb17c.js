@@ -99,7 +99,8 @@ var InputBlock = /** @class */ (function (_super) {
         var code = this.block.getCode();
         console.log(code);
         this.setState({ error: undefined, evaluating: true });
-        //this.editor.getSession().setAnnotations([]);
+        var model = this.editor.getModel();
+        monaco.editor.setModelMarkers(model, "", []);
         try {
             this.block.setCodeAndCompile(code);
             return true;
@@ -109,12 +110,15 @@ var InputBlock = /** @class */ (function (_super) {
             var message = err.message, location_1 = err.location;
             var _a = location_1.start, line = _a.line, column = _a.column;
             this.setError(message + " in line " + line + ", column " + column);
-            /*this.editor.getSession().setAnnotations([{
-                row: err.location.start.line-1,
-                column: err.location.start.column,
-                text: err.message,
-                type: "error" // also warning and information
-            }]);*/
+            console.log(e);
+            monaco.editor.setModelMarkers(model, "", [{
+                    severity: monaco.Severity.Error,
+                    startLineNumber: location_1.start.line,
+                    startColumn: location_1.start.column,
+                    endLineNumber: location_1.end.line,
+                    endColumn: location_1.end.column,
+                    message: err.message
+                }]);
             this.stopReducing();
             return false;
         }
@@ -2671,4 +2675,4 @@ document.body.appendChild(target);
 /***/ })
 
 },[89]);
-//# sourceMappingURL=main-8a818dca85f2836765b5.js.map
+//# sourceMappingURL=main-5df267d56dafe7bcb17c.js.map
