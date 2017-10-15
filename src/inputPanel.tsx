@@ -116,7 +116,8 @@ class InputBlock extends React.Component<InputBlockProperties, InputBlockState> 
         const code = this.block.getCode();
         console.log(code);
         this.setState({ error: undefined, evaluating: true });
-        //this.editor.getSession().setAnnotations([]);
+        let model = this.editor.getModel();
+        monaco.editor.setModelMarkers(model, "", []);
         try {
             this.block.setCodeAndCompile(code);
             return true;
@@ -126,13 +127,17 @@ class InputBlock extends React.Component<InputBlockProperties, InputBlockState> 
             const { line, column } = location.start;
 
             this.setError(`${message} in line ${line}, column ${column}`);
+            console.log(e);
 
-            /*this.editor.getSession().setAnnotations([{
-                row: err.location.start.line-1,
-                column: err.location.start.column,
-                text: err.message,
-                type: "error" // also warning and information
-            }]);*/
+            monaco.editor.setModelMarkers(model, "", [{
+                severity: monaco.Severity.Error,
+                startLineNumber: location.start.line,
+                startColumn: location.start.column,
+                endLineNumber: location.end.line,
+                endColumn: location.end.column,
+                message: err.message
+            }])
+
             this.stopReducing();
             return false;
         }
